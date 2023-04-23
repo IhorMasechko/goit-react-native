@@ -86,7 +86,7 @@ const LoginScreen = () => {
                     textAlign={"left"}
                     placeholderTextColor={"#BDBDBD"}
                     keyboardType="email-address"
-                    textContentType="email"
+                    textContentType="emailAddress"
                     value={state.email}
                     placeholder="Адрес электронной почты"
                     onFocus={() => {

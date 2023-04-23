@@ -181,7 +181,7 @@ const RegistrationScreen = () => {
                     }}
                     textAlign={"left"}
                     placeholderTextColor={"#BDBDBD"}
-                    textContentType="password"
+                    textContentType="newPassword"
                     value={state.password}
                     secureTextEntry={isShowPassword}
                     placeholder="Пароль"
