@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useCallback } from "react";
 import {
   StyleSheet,
   TextInput,
@@ -8,38 +8,65 @@ import {
   TouchableOpacity,
   Platform,
   KeyboardAvoidingView,
-  Keyboard,
+  Image,
   TouchableWithoutFeedback,
+  Keyboard,
 } from "react-native";
 
+import { useDispatch } from "react-redux";
+
+import { useFonts } from "expo-font";
+import * as SplashScreen from "expo-splash-screen";
+
+import { authSignUpUser } from "../../redux/auth/authOperations";
+
 const initialState = {
+  userName: "",
   email: "",
   password: "",
 };
 
-const LoginScreen = () => {
+SplashScreen.preventAutoHideAsync();
+
+const RegistrationScreen = ({ navigation }) => {
   const [isShowKeyboard, setIsShowKeyboard] = useState(false);
   const [state, setState] = useState(initialState);
   const [isFocusInput, setIsFocusInput] = useState({
+    userName: false,
     email: false,
     password: false,
   });
   const [isShowPassword, setIsShowPassword] = useState(true);
+  const [fontsLoaded] = useFonts({
+    RobotoRegular: require("../../assets/fonts/Roboto-Regular.ttf"),
+    RobotoMedium: require("../../assets/fonts/Roboto-Medium.ttf"),
+  });
+
+  const dispatch = useDispatch();
+
+  const onLayoutRootView = useCallback(async () => {
+    if (fontsLoaded) {
+      await SplashScreen.hideAsync();
+    }
+  }, [fontsLoaded]);
 
   const handleSubmit = () => {
+    setIsShowKeyboard(false);
+    Keyboard.dismiss();
+
+    dispatch(authSignUpUser(state));
+
     setState(initialState);
-    console.log(state);
   };
 
+  if (!fontsLoaded) {
+    return null;
+  }
   return (
-    <TouchableWithoutFeedback
-      onPress={() => {
-        Keyboard.dismiss();
-      }}
-    >
+    <TouchableWithoutFeedback onPress={handleSubmit}>
       <View style={styles.container}>
         <ImageBackground
-          source={require("../assets/image/photo-BG-2x.jpg")}
+          source={require("../../assets/image/photo-BG-2x.jpg")}
           style={styles.image}
         >
           <KeyboardAvoidingView
@@ -51,29 +78,65 @@ const LoginScreen = () => {
 
                 ...Platform.select({
                   ios: {
-                    marginTop: isShowKeyboard ? 456 : 0,
+                    marginTop: isShowKeyboard ? 200 : 219,
                   },
                   android: {
-                    marginTop: isShowKeyboard ? -50 : 0,
+                    marginTop: isShowKeyboard ? -100 : 0,
                   },
                 }),
               }}
             >
-              <Text
-                style={{
-                  ...styles.title,
-                  marginTop: isShowKeyboard ? 24 : 0,
-                }}
-              >
-                Войти
-              </Text>
+              <View style={styles.imgBox}>
+                <Image
+                  style={styles.icon}
+                  source={require("../../assets/image/add.png")}
+                />
+              </View>
+              <Text style={styles.title}>Регистрация</Text>
 
               <View
                 style={{
                   ...styles.form,
-                  paddingBottom: isShowKeyboard ? 32 : 111,
+                  paddingBottom: isShowKeyboard ? 32 : 45,
                 }}
               >
+                <View style={styles.inputuserName}>
+                  <TextInput
+                    style={{
+                      ...styles.input,
+                      borderColor: isFocusInput.userName
+                        ? "#FF6C00"
+                        : "#F6F6F6",
+                      backgroundColor: isFocusInput.userName
+                        ? "#FFFFFF"
+                        : "#F6F6F6",
+                    }}
+                    textAlign={"left"}
+                    placeholderTextColor={"#BDBDBD"}
+                    textContentType="username"
+                    value={state.userName.toString()}
+                    placeholder="Логин"
+                    onFocus={() => {
+                      setIsShowKeyboard(true),
+                        setIsFocusInput({
+                          ...isFocusInput,
+                          userName: true,
+                        });
+                    }}
+                    onBlur={() => {
+                      setIsFocusInput({
+                        ...isFocusInput,
+                        userName: false,
+                      });
+                    }}
+                    onChangeText={(value) =>
+                      setState((prevState) => ({
+                        ...prevState,
+                        userName: value,
+                      }))
+                    }
+                  />
+                </View>
                 <View style={styles.inputMail}>
                   <TextInput
                     style={{
@@ -86,7 +149,7 @@ const LoginScreen = () => {
                     textAlign={"left"}
                     placeholderTextColor={"#BDBDBD"}
                     keyboardType="email-address"
-                    textContentType="emailAddress"
+                    textContentType={"emailAddress"}
                     value={state.email}
                     placeholder="Адрес электронной почты"
                     onFocus={() => {
@@ -125,7 +188,7 @@ const LoginScreen = () => {
                     textAlign={"left"}
                     placeholderTextColor={"#BDBDBD"}
                     textContentType="password"
-                    value={state.password}
+                    value={state.password.toString()}
                     secureTextEntry={isShowPassword}
                     placeholder="Пароль"
                     onFocus={() => {
@@ -162,14 +225,10 @@ const LoginScreen = () => {
                   activeOpacity={0.8}
                   onPress={handleSubmit}
                 >
-                  <Text style={styles.buttonText}>Войти</Text>
+                  <Text style={styles.buttonText}>Зарегистрироваться</Text>
                 </TouchableOpacity>
-                <TouchableOpacity
-                  onPress={() => navigation.navigate("Registration")}
-                >
-                  <Text style={styles.aside}>
-                    Нет аккаунта? Зарегистрироваться
-                  </Text>
+                <TouchableOpacity onPress={() => navigation.navigate("Login")}>
+                  <Text style={styles.aside}>Уже есть аккаунт? Войти</Text>
                 </TouchableOpacity>
               </View>
             </View>
@@ -179,7 +238,7 @@ const LoginScreen = () => {
     </TouchableWithoutFeedback>
   );
 };
-export default LoginScreen;
+export default RegistrationScreen;
 
 const styles = StyleSheet.create({
   container: {
@@ -191,13 +250,33 @@ const styles = StyleSheet.create({
     justifyContent: "flex-end",
   },
   formWrapper: {
-    paddingTop: 32,
+    paddingTop: 92,
     paddingLeft: 16,
     paddingRight: 16,
     backgroundColor: "#FFFFFF",
     borderTopRightRadius: 25,
     borderTopLeftRadius: 25,
     justifyContent: "center",
+  },
+  imgBox: {
+    position: "absolute",
+    left: "35%",
+    top: "-15%",
+    width: 120,
+    height: 120,
+    backgroundColor: "#F6F6F6",
+    borderRadius: 16,
+  },
+  avatar: {
+    width: "100%",
+    height: "100%",
+  },
+  icon: {
+    position: "absolute",
+    left: "90%",
+    top: "65%",
+    width: 25,
+    height: 25,
   },
   title: {
     fontFamily: "RobotoMedium",
@@ -219,8 +298,11 @@ const styles = StyleSheet.create({
     height: 50,
     borderRadius: 8,
   },
-  inputMail: {
+  inputuserName: {
     marginTop: 32,
+  },
+  inputMail: {
+    marginTop: 16,
   },
   inputPassword: {
     marginTop: 16,

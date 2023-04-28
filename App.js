@@ -1,10 +1,19 @@
+import { Provider } from "react-redux";
+
 import { StatusBar } from "expo-status-bar";
-import { StyleSheet, View } from "react-native";
-import LoginScreen from "./Screens/LoginScreen";
-import RegistrationScreen from "./Screens/RegistrationScreen";
-import { useFonts } from "expo-font";
+
+import { View, StyleSheet } from "react-native";
+
+import { store } from "./redux/store";
+
 import { useCallback } from "react";
+
+import { useFonts } from "expo-font";
 import * as SplashScreen from "expo-splash-screen";
+
+import Main from "./components/Main";
+
+SplashScreen.preventAutoHideAsync();
 
 export default function App() {
   const [fontsLoaded] = useFonts({
@@ -23,11 +32,14 @@ export default function App() {
     return null;
   }
   return (
-    <View onLayout={onLayoutRootView} style={styles.container}>
-      <LoginScreen />
-      {/* <RegistrationScreen /> */}
-      <StatusBar style="auto" />
-    </View>
+    <>
+      <Provider store={store}>
+        <View onLayout={onLayoutRootView} style={styles.container}>
+          <StatusBar style="auto" />
+          <Main />
+        </View>
+      </Provider>
+    </>
   );
 }
 
